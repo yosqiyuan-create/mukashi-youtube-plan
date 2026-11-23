@@ -790,6 +790,7 @@ $("p-chk").addEventListener("click",e=>{const k=e.target.dataset.ckreset;if(!k)r
 $("moreSeg").onclick=e=>{const p=e.target.dataset.p;if(!p)return;st.morePanel=p;save();showPanel();if(p==="cmp")renderCmp();if(p==="judge")renderCps();if(p==="prod")renderVids()};
 window.addEventListener("resize",()=>{drawCharts();renderActuals()});
 load();renderAll();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
