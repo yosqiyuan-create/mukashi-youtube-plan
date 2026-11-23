@@ -40,6 +40,7 @@ nav button{flex:1;border:none;background:none;padding:8px 0 7px;font-size:11px;c
 nav button b{display:block;font-size:18px;font-weight:400;line-height:1.2}
 nav button.on{color:var(--red);font-weight:600}
 .tab{display:none}.tab.on{display:block}
+.panel{display:none}.panel.on{display:block}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px}
 .kpi .k{font-size:11px;color:var(--sub)}.kpi .v{font-size:17px;font-weight:700}
@@ -71,6 +72,15 @@ textarea{width:100%;min-height:120px;font-size:15px;border:1px solid var(--line)
 .sbar span{flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden}
 .sbar span i{display:block;height:100%;background:var(--blue)}
 .pager{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.ck input{width:22px;height:22px;flex:none;margin-top:1px}
+.ck.on span{color:var(--sub);text-decoration:line-through}
+.vd{padding:8px 0;border-bottom:1px dashed var(--line)}
+.vd .top{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.vd .ctl{display:flex;gap:6px;margin-top:4px;align-items:center}
+.vd select,.vd input{font-size:14px;padding:4px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.form .row input{width:130px}
+input[type=month],input[type=date]{font-size:16px}
 input[type=search]{width:100%;font-size:16px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
 </style>
 </head>
@@ -99,6 +109,7 @@ input[type=search]{width:100%;font-size:16px;padding:7px 10px;border:1px solid v
   <h2>そのほか</h2>
   <div class="row"><label>自分の時給換算（0なら無視）</label><input type="number" data-b="hourly" inputmode="numeric"><span class="u">円</span></div>
   <div class="row"><label>シミュレーション期間</label><input type="number" data-b="months" inputmode="numeric"><span class="u">か月</span></div>
+  <div class="row"><label>開始月（1か月目）</label><input type="month" id="startYM" style="width:150px"><span class="u"></span></div>
   <p class="note">Kindleの設定は「Kindle」タブにあります。</p>
  </div>
  <div class="card warn">
@@ -163,6 +174,12 @@ input[type=search]{width:100%;font-size:16px;padding:7px 10px;border:1px solid v
   <p class="note">セット価格＝1話あたり価格×冊数。英語＋日本語の2か国語絵本を日米両方で販売。KDPセレクト登録（日本で70%を受け取る条件）の前提。</p>
  </div>
  <div class="card">
+  <h2>Kindle Unlimited（読み放題）</h2>
+  <div class="row"><label>1冊を全部読んだときのページ数（KENP）</label><input type="number" data-k="kenpSingle" inputmode="numeric"><span class="u">ページ</span></div>
+  <div class="row"><label>1ページあたりの収益</label><input type="number" data-k="kenpRate" inputmode="decimal"><span class="u">円</span></div>
+  <p class="note">KDPセレクト登録の本は読み放題で読まれたページ数に応じて収益が入ります。1ページの単価は毎月変わるので目安です。読まれる回数は「予測」タブで設定します。</p>
+ </div>
+ <div class="card">
   <h2>1件売れたときの手取り</h2>
   <div class="tbl"><table id="royTbl"></table></div>
   <p class="note">70%と35%のうち手取りが多い方を自動で選んでいます。日本は税抜価格で計算。日本はファイル10MB以上なら配信コスト0円、米国は1MBあたり$0.15。</p>
@@ -224,35 +241,102 @@ input[type=search]{width:100%;font-size:16px;padding:7px 10px;border:1px solid v
  </div>
 </section>
 
-<!-- 比較 -->
-<section class="tab" id="t-cmp">
+<!-- ④ 実績 -->
+<section class="tab" id="t-act">
+ <div class="card form">
+  <h2>今月の実績を入れる</h2>
+  <div class="row"><label>月</label><input type="month" id="aYM" style="width:150px"><span class="u"></span></div>
+  <div class="row"><label>登録者数（月末）</label><input type="number" data-a="subs" inputmode="numeric"><span class="u">人</span></div>
+  <div class="row"><label>この月の再生数</label><input type="number" data-a="views" inputmode="numeric"><span class="u">回</span></div>
+  <div class="row"><label>直近12か月の総再生時間</label><input type="number" data-a="wh12" inputmode="numeric"><span class="u">時間</span></div>
+  <div class="row"><label>YouTube収益</label><input type="number" data-a="yt" inputmode="numeric"><span class="u">円</span></div>
+  <div class="row"><label>Kindle 出版済みタイトル数</label><input type="number" data-a="kdTitles" inputmode="numeric"><span class="u">件</span></div>
+  <div class="row"><label>Kindle 売れた数（この月）</label><input type="number" data-a="kdSales" inputmode="numeric"><span class="u">件</span></div>
+  <div class="row"><label>Kindle 収益（読み放題込み）</label><input type="number" data-a="kdRev" inputmode="numeric"><span class="u">円</span></div>
+  <div class="row"><label>費用（空欄なら計画の値）</label><input type="number" data-a="cost" inputmode="numeric"><span class="u">円</span></div>
+  <button class="btn main" id="aSave">この月を保存</button>
+  <p class="note">同じ月をもう一度保存すると上書きします。数字はYouTube StudioとKDPのレポートから写してください。</p>
+ </div>
  <div class="card">
-  <h2>いろんな形で比べる</h2>
-  <p class="note">今の設定（前提・Kindle・売れ行き）に名前を付けて保存し、ほかの形と並べて比べます。例：「月4本＋5冊セット」「月8本＋10冊セット」「Kindleだけ」。</p>
-  <div class="row"><label>名前</label><input type="text" id="planName" style="width:170px;text-align:left" placeholder="例：月4本＋5冊セット"><span class="u"></span></div>
-  <button class="btn main" id="planSave">今の設定を保存</button>
-  <div class="seg" id="cmpSeg"><button data-s="p">悲観</button><button data-s="s" class="on">標準</button><button data-s="o">楽観</button></div>
-  <div class="tbl"><table id="cmpTbl"></table></div>
-  <p class="note">数字は期間全体の合計。「呼び出す」で、その形の設定を今の設定に戻せます。</p>
+  <h2>計画との比べ（<span class="scName">標準</span>）</h2>
+  <div class="kpis" id="aKpis"></div>
+  <canvas id="chartA" style="margin-top:10px"></canvas>
+  <div class="legend"><span><i style="background:#3f6b8f"></i>計画の月収益</span><span><i style="background:#c8483a"></i>実績の月収益</span></div>
+  <div class="tbl" style="margin-top:8px"><table id="aTbl"></table></div>
+ </div>
+ <div class="card">
+  <h2>実績から予測を直す</h2>
+  <div id="aEst"><p class="note">実績を入れると、ここに「実際の数字から見た値」が出ます。</p></div>
  </div>
 </section>
 
-<!-- その他：判断・保存 -->
+<!-- その他 -->
 <section class="tab" id="t-more">
- <div class="card">
-  <h2>続ける・直す・休む の判断ライン</h2>
-  <p class="note">目標を決めておき、その月が来たら実績を入れます。実績÷目標が100%以上＝続行、50〜99%＝改善、50%未満＝休止を検討。初期の目標は標準シナリオの予測に合わせています。</p>
-  <div id="cps"></div>
-  <button class="btn" id="addCp">＋ 判断ラインを追加</button>
+ <div class="seg" id="moreSeg" style="margin-top:10px"><button data-p="prod">制作</button><button data-p="chk">チェック</button><button data-p="cmp">比較</button><button data-p="judge">判断</button><button data-p="data">保存</button></div>
+
+ <div class="panel" id="p-prod">
+  <div class="card">
+   <h2>YouTube動画の制作管理</h2>
+   <div class="kpis" id="vKpis"></div>
+  </div>
+  <div class="card form">
+   <h2>動画を追加</h2>
+   <div class="row"><label>タイトル一覧から選ぶ</label><select id="vPick" style="width:150px"></select><span class="u"></span></div>
+   <div class="row"><label>または名前を入力</label><input type="text" id="vName" style="width:150px;text-align:left" placeholder="例：Momotaro"><span class="u"></span></div>
+   <div class="row"><label>公開予定日</label><input type="date" id="vDue" style="width:150px"><span class="u"></span></div>
+   <button class="btn main" id="vAdd">追加</button>
+  </div>
+  <div class="card">
+   <h2>動画の一覧</h2>
+   <div class="seg" id="vFilt"><button data-f="todo" class="on">制作中</button><button data-f="done">公開済</button><button data-f="all">全部</button></div>
+   <div id="vList"></div>
+  </div>
  </div>
- <div class="card">
-  <h2>データの保存</h2>
-  <p class="note">入力内容はこのiPhoneの中に自動保存されます（外には送信されません）。ときどきバックアップしてください。</p>
-  <button class="btn main" id="exportBtn">バックアップを書き出す</button>
-  <button class="btn" id="importBtn">バックアップを読み込む</button>
-  <input type="file" id="importFile" accept=".json,application/json" style="display:none">
-  <button class="btn" id="resetBtn" style="color:var(--red)">全部を初期値に戻す</button>
-  <p class="note" id="dataMsg"></p>
+
+ <div class="panel" id="p-chk">
+  <div class="card">
+   <h2>YouTube 公開前チェック <span class="note" id="ckYtN"></span></h2>
+   <div id="ckYt"></div>
+   <button class="btn s" data-ckreset="yt">次の動画のためにリセット</button>
+  </div>
+  <div class="card">
+   <h2>Kindle 出版前チェック <span class="note" id="ckKdN"></span></h2>
+   <div id="ckKd"></div>
+   <button class="btn s" data-ckreset="kd">次の本のためにリセット</button>
+  </div>
+ </div>
+
+ <div class="panel" id="p-cmp">
+  <div class="card">
+   <h2>いろんな形で比べる</h2>
+   <p class="note">今の設定（前提・Kindle・売れ行き）に名前を付けて保存し、ほかの形と並べて比べます。例：「月4本＋5冊セット」「月8本＋10冊セット」「Kindleだけ」。</p>
+   <div class="row"><label>名前</label><input type="text" id="planName" style="width:170px;text-align:left" placeholder="例：月4本＋5冊セット"><span class="u"></span></div>
+   <button class="btn main" id="planSave">今の設定を保存</button>
+   <div class="seg" id="cmpSeg"><button data-s="p">悲観</button><button data-s="s" class="on">標準</button><button data-s="o">楽観</button></div>
+   <div class="tbl"><table id="cmpTbl"></table></div>
+   <p class="note">数字は期間全体の合計。「呼び出す」で、その形の設定を今の設定に戻せます。</p>
+  </div>
+ </div>
+
+ <div class="panel" id="p-judge">
+  <div class="card">
+   <h2>続ける・直す・休む の判断ライン</h2>
+   <p class="note">目標を決めておき、その月が来たら実績を入れます。実績÷目標が100%以上＝続行、50〜99%＝改善、50%未満＝休止を検討。「実績」タブに入れた数字があれば自動で使います。</p>
+   <div id="cps"></div>
+   <button class="btn" id="addCp">＋ 判断ラインを追加</button>
+  </div>
+ </div>
+
+ <div class="panel" id="p-data">
+  <div class="card">
+   <h2>データの保存</h2>
+   <p class="note">入力内容はこのiPhoneの中に自動保存されます（外には送信されません）。ときどきバックアップしてください。バックアップファイルはGitHubには上げないでください。</p>
+   <button class="btn main" id="exportBtn">バックアップを書き出す</button>
+   <button class="btn" id="importBtn">バックアップを読み込む</button>
+   <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+   <button class="btn" id="resetBtn" style="color:var(--red)">全部を初期値に戻す</button>
+   <p class="note" id="dataMsg"></p>
+  </div>
  </div>
 </section>
 
@@ -262,34 +346,38 @@ input[type=search]{width:100%;font-size:16px;padding:7px 10px;border:1px solid v
  <button data-t="t-sim"><b>📈</b>予測</button>
  <button data-t="t-kd"><b>📚</b>Kindle</button>
  <button data-t="t-set"><b>🧩</b>セット</button>
- <button data-t="t-cmp"><b>⚖︎</b>比較</button>
+ <button data-t="t-act"><b>📝</b>実績</button>
  <button data-t="t-more"><b>…</b>その他</button>
 </nav>
 
 <script>
 const KEY="mukashi_plan_v2";
 const clone=o=>JSON.parse(JSON.stringify(o));
+const nextYM=(()=>{const d=new Date();d.setMonth(d.getMonth()+1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")})();
 const DEF={
- base:{claude:3000,claudeShare:100,gemini:2900,geminiStart:1,videos:4,lenMin:10,watchPct:40,hours:10,hourly:0,months:24},
+ base:{claude:3000,claudeShare:100,gemini:2900,geminiStart:1,videos:4,lenMin:10,watchPct:40,hours:10,hourly:0,months:24,startYM:nextYM},
  sc:{
-  p:{views:50,growth:5,tail:5,subs:3,rpm:150,kSingle:0.3,kSet:0.3},
-  s:{views:200,growth:15,tail:10,subs:6,rpm:400,kSingle:1,kSet:1},
-  o:{views:800,growth:25,tail:15,subs:10,rpm:800,kSingle:3,kSet:3}
+  p:{views:50,growth:5,tail:5,subs:3,rpm:150,kSingle:0.3,kSet:0.3,kReads:0.1},
+  s:{views:200,growth:15,tail:10,subs:6,rpm:400,kSingle:1,kSet:1,kReads:0.3},
+  o:{views:800,growth:25,tail:15,subs:10,rpm:800,kSingle:3,kSet:3,kReads:1}
  },
- kd:{total:1400,makePerDay:1,pubPerDay:3,mode:"set",setSize:5,jpSingle:250,usSingle:2.99,jpPerStory:160,usPerStory:1,mb:15,jpShare:50,fx:150},
+ kd:{total:1400,makePerDay:1,pubPerDay:3,mode:"set",setSize:5,jpSingle:250,usSingle:2.99,jpPerStory:160,usPerStory:1,mb:15,jpShare:50,fx:150,kenpSingle:24,kenpRate:0.5},
  cps:[{month:3,metric:"subs",target:20,actual:""},{month:6,metric:"subs",target:50,actual:""},{month:12,metric:"subs",target:200,actual:""}],
  cur:"s",view:"all",cmpSc:"s",
  plans:[],titles:[],sets:[],
  sd:{size:5,group:"theme",anchors:1,w:{coh:2,anc:2,len:1,done:1}},
+ actuals:[],vids:[],checks:{yt:{},kd:{}},morePanel:"prod",vFilter:"todo",
  nextId:1
 };
 const SCY=[["views","新作1本の初月再生数","回"],["growth","チャンネル成長率（毎月）","%"],["tail","過去動画が毎月見られる割合","%"],["subs","1,000回再生あたりの登録者増","人"],["rpm","RPM（1,000回再生あたり収益）","円"]];
-const SCK=[["kSingle","単品1冊が月に売れる数","件"],["kSet","1セットが月に売れる数","件"]];
+const SCK=[["kSingle","単品1冊が月に売れる数","件"],["kSet","1セットが月に売れる数","件"],["kReads","1タイトルが月に読み放題で全部読まれる回数","回"]];
 const METRICS={subs:"登録者数",views:"月間再生数",wh12:"直近12か月の総再生時間",rev:"月の収益（YouTube＋Kindle）"};
 const SCN={p:"悲観",s:"標準",o:"楽観"};
 const LV=["","易","中","難"],LN=["","短","中","長"],FM=["","無名","普通","★有名"],SS=["未","作中","済"];
 let st;
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.base){st=Object.assign(clone(DEF),s);return}}catch(e){}st=clone(DEF)}
+function merge(s){const d=clone(DEF),o=Object.assign(d,s);o.base=Object.assign(clone(DEF.base),s.base||{});o.kd=Object.assign(clone(DEF.kd),s.kd||{});
+ o.sc={};for(const k of ["p","s","o"])o.sc[k]=Object.assign(clone(DEF.sc[k]),(s.sc||{})[k]||{});o.sd=Object.assign(clone(DEF.sd),s.sd||{});o.checks=Object.assign({yt:{},kd:{}},s.checks||{});return o}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.base){st=merge(s);return}}catch(e){}st=clone(DEF)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 const yen=n=>(n<0?"−":"")+"¥"+Math.round(Math.abs(n)).toLocaleString();
 const num=n=>Math.round(n).toLocaleString();
@@ -327,7 +415,8 @@ function kindleRun(S,sc,sizeOverride,modeOverride){
   if(mode==="single")ls=Math.min(made,cap);
   else if(mode==="set")lt=Math.min(setsReady,cap);
   else{const want=made+setsReady,live=Math.min(want,cap),r=want?live/want:0;ls=made*r;lt=setsReady*r}
-  rows.push({m,live:ls+lt,rev:ls*s.kSingle*one.yen+lt*s.kSet*set.yen});
+  const ku=(ls*k.kenpSingle+lt*k.kenpSingle*size)*(s.kReads||0)*k.kenpRate;
+  rows.push({m,live:ls+lt,ku,rev:ls*s.kSingle*one.yen+lt*s.kSet*set.yen+ku});
  }
  return{rows,one,set,sp,doneDays,firstDay,titlesTotal,totalSets,size,mode};
 }
@@ -356,6 +445,7 @@ function fillInputs(){
  document.querySelectorAll("[data-k]").forEach(el=>el.value=st.kd[el.dataset.k]);
  document.querySelectorAll("[data-w]").forEach(el=>el.value=st.sd.w[el.dataset.w]);
  document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on",x.dataset.m===st.kd.mode));
+ $("startYM").value=st.base.startYM||nextYM;$("aYM").value=$("aYM").value||thisYM();
  $("sdSize").value=st.sd.size;$("sdGroup").value=st.sd.group;$("sdAnchor").value=st.sd.anchors;
 }
 function renderSc(){
@@ -390,13 +480,15 @@ function lineChart(id,series){
  const cv=$(id);if(!cv||!cv.clientWidth)return;
  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;
  const g=cv.getContext("2d");g.scale(dpr,dpr);g.clearRect(0,0,W,H);
- let mn=0,mx=0;series.forEach(s=>s.d.forEach(v=>{mn=Math.min(mn,v);mx=Math.max(mx,v)}));if(mx===mn)mx=mn+1;
+ let mn=0,mx=0;series.forEach(s=>s.d.forEach(v=>{if(isNaN(v))return;mn=Math.min(mn,v);mx=Math.max(mx,v)}));if(mx===mn)mx=mn+1;
  const n=series[0].d.length,L=50,R=8,T=8,B=22,X=i=>L+(W-L-R)*(i/Math.max(n-1,1)),Y=v=>T+(H-T-B)*(1-(v-mn)/(mx-mn));
  g.font="10px -apple-system,sans-serif";g.fillStyle="#6b6a72";g.strokeStyle="#ddd3bf";g.lineWidth=1;
  for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4,y=Y(v);g.beginPath();g.moveTo(L,y);g.lineTo(W-R,y);g.stroke();const a=Math.abs(v);g.fillText((v<0?"−":"")+(a>=10000?(a/10000).toFixed(a>=100000?0:1)+"万":Math.round(a)),2,y+3)}
  if(mn<0){g.strokeStyle="#2b2b33";g.beginPath();g.moveTo(L,Y(0));g.lineTo(W-R,Y(0));g.stroke()}
  for(let i=0;i<n;i+=Math.ceil(n/6))g.fillText((i+1)+"月",X(i)-6,H-6);
- series.forEach(s=>{g.strokeStyle=s.c;g.lineWidth=s.w||2;g.setLineDash(s.dash||[]);g.beginPath();s.d.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));g.stroke()});g.setLineDash([]);
+ series.forEach(s=>{g.strokeStyle=s.c;g.fillStyle=s.c;g.lineWidth=s.w||2;g.setLineDash(s.dash||[]);g.beginPath();let pen=false;
+  s.d.forEach((v,i)=>{if(isNaN(v)){pen=false;return}if(pen)g.lineTo(X(i),Y(v));else{g.moveTo(X(i),Y(v));pen=true}});g.stroke();
+  if(s.dots)s.d.forEach((v,i)=>{if(!isNaN(v)){g.beginPath();g.arc(X(i),Y(v),3,0,7);g.fill()}})});g.setLineDash([]);
 }
 function drawCharts(){
  const rows=simulate(st,st.cur).rows;
@@ -415,6 +507,7 @@ function renderKd(){
  $("kdKpis").innerHTML=[
   ["売り始め",kr.firstDay+"日目"],["全部出し終わる",(kr.doneDays/365).toFixed(1)+"年（"+num(kr.doneDays)+"日）"],
   ["出すタイトル数",num(kr.titlesTotal)+"件"],["1話あたり手取り（セット）",yen(kr.set.yen/kr.size)],
+  ["読み放題1回の収益（セット）",yen(k.kenpSingle*kr.size*k.kenpRate)],["うち読み放題（期間合計）",yen(kr.rows.reduce((a,x)=>a+x.ku,0))],
   [`${last.m}か月目の月収益`,yen(last.rev)],[`${last.m}か月の合計`,yen(sum)]
  ].map(([a,b])=>`<div class="kpi"><div class="k">${a}</div><div class="v">${b}</div></div>`).join("");
  const sizes=[...new Set([3,5,10,20,k.setSize])].sort((a,b)=>a-b);
@@ -553,18 +646,78 @@ function renderCps(){
  $("cps").innerHTML=st.cps.map((c,i)=>{
   const f=sim[c.month-1],fv=f?(c.metric==="subs"?f.subs:c.metric==="views"?f.views:c.metric==="wh12"?f.wh12:f.yt+f.kd):null;
   let badge='<span class="badge b-none">実績待ち</span>';
-  if(c.actual!==""&&c.target>0){const r=c.actual/c.target;badge=r>=1?'<span class="badge b-go">続行</span>':r>=.5?'<span class="badge b-fix">改善</span>':'<span class="badge b-stop">休止を検討</span>'}
+  const A=actualAt(c.month),auto=A?(c.metric==="subs"?+A.subs:c.metric==="views"?+A.views:c.metric==="wh12"?+A.wh12:(+A.yt||0)+(+A.kdRev||0)):null;
+  const act=c.actual!==""?c.actual:(auto!=null&&!isNaN(auto)?auto:"");
+  if(act!==""&&c.target>0){const r=act/c.target;badge=r>=1?'<span class="badge b-go">続行</span>':r>=.5?'<span class="badge b-fix">改善</span>':'<span class="badge b-stop">休止を検討</span>'}
   return `<div class="box"><div class="top"><b>${c.month}か月目</b>${badge}</div>
    <div class="row"><label>月</label><input type="number" inputmode="numeric" data-ci="${i}" data-cf="month" value="${c.month}"><span class="u">か月目</span></div>
    <div class="row"><label>見る数字</label><select data-ci="${i}" data-cf="metric">${Object.entries(METRICS).map(([k,l])=>`<option value="${k}" ${k===c.metric?"selected":""}>${l}</option>`).join("")}</select><span class="u"></span></div>
    <div class="row"><label>目標</label><input type="number" inputmode="decimal" data-ci="${i}" data-cf="target" value="${c.target}"><span class="u"></span></div>
-   <div class="row"><label>実績（その月が来たら入力）</label><input type="number" inputmode="decimal" data-ci="${i}" data-cf="actual" value="${c.actual}"><span class="u"></span></div>
+   <div class="row"><label>実績（空欄なら「実績」タブの値）</label><input type="number" inputmode="decimal" data-ci="${i}" data-cf="actual" value="${c.actual}" placeholder="${auto!=null&&!isNaN(auto)?num(auto):""}"><span class="u"></span></div>
    <p class="note">標準シナリオの予測：${fv==null?"期間外":num(fv)}　<a href="#" data-del="${i}" style="color:var(--red);float:right">削除</a></p></div>`}).join("");
 }
 
+
+/* ---------- ④ 実績 ---------- */
+function thisYM(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
+function monthIdx(ym){const [y,m]=ym.split("-").map(Number),[y0,m0]=(st.base.startYM||nextYM).split("-").map(Number);return (y-y0)*12+(m-m0)+1}
+const AF=["subs","views","wh12","yt","kdTitles","kdSales","kdRev","cost"];
+function actualAt(m){return st.actuals.find(a=>monthIdx(a.ym)===m)}
+function renderActuals(){
+ const plan=simulate(st,st.cur).rows,acts=st.actuals.slice().sort((a,b)=>a.ym<b.ym?-1:1);
+ let cumA=0,cumP=0,cumCost=0;
+ const rowsH=acts.map(a=>{const i=monthIdx(a.ym),p=plan[i-1],rev=(+a.yt||0)+(+a.kdRev||0),cost=a.cost!==""&&a.cost!=null?+a.cost:(p?p.cost:0);
+  cumA+=rev;cumCost+=cost;const pr=p?p.yt+p.kd:0;cumP+=pr;
+  const pct=pr>0?Math.round(rev/pr*100)+"%":"−";
+  return `<tr><td>${a.ym}<br><span class="note">${i>0?i+"か月目":"開始前"}</span></td><td>${num(+a.subs||0)}<br><span class="note">計画${p?num(p.subs):"−"}</span></td><td>${num(+a.views||0)}<br><span class="note">計画${p?num(p.views):"−"}</span></td><td>${yen(rev)}<br><span class="note">計画${p?yen(pr):"−"}</span></td><td>${pct}</td><td><a href="#" data-adel="${a.ym}" style="color:var(--red)">削除</a></td></tr>`});
+ $("aTbl").innerHTML=acts.length?"<tr><th>月</th><th>登録者</th><th>再生数</th><th>収益</th><th>計画比</th><th></th></tr>"+rowsH.join(""):'<tr><td class="note">まだ実績がありません。</td></tr>';
+ $("aKpis").innerHTML=[["入力した月数",acts.length+"か月",""],["実績の収益合計",yen(cumA),""],["実績の損益合計",yen(cumA-cumCost),cumA-cumCost>=0?"pos":"neg"],["同じ期間の計画との比",cumP>0?Math.round(cumA/cumP*100)+"%":"−",""]]
+  .map(([a,b,c])=>`<div class="kpi"><div class="k">${a}</div><div class="v ${c}">${b}</div></div>`).join("");
+ const n=st.base.months,act=Array.from({length:n},(_,i)=>{const a=actualAt(i+1);return a?(+a.yt||0)+(+a.kdRev||0):NaN});
+ lineChart("chartA",[{c:"#3f6b8f",d:plan.map(x=>x.yt+x.kd)},{c:"#c8483a",d:act,dots:true}]);
+ // 推定
+ const est=[],last=acts[acts.length-1];
+ if(last&&+last.kdTitles>0&&last.kdSales!==""){const v=+(+last.kdSales/+last.kdTitles).toFixed(2),key=st.kd.mode==="single"?"kSingle":"kSet";
+  est.push({l:`Kindle：1タイトルが月に売れる数 ≈ ${v}件（今の${SCN[st.cur]}は${st.sc[st.cur][key]}件）`,k:key,v})}
+ if(last&&+last.yt>0&&+last.views>0){const v=Math.round(+last.yt/+last.views*1000);est.push({l:`YouTube：RPM ≈ ${v}円（今の${SCN[st.cur]}は${st.sc[st.cur].rpm}円）`,k:"rpm",v})}
+ if(acts.length>=2){const a=acts[acts.length-2],b=last;if(+b.views>0){const v=+((+b.subs-+a.subs)/+b.views*1000).toFixed(1);if(v>=0)est.push({l:`YouTube：1,000回再生あたりの登録者増 ≈ ${v}人（今の${SCN[st.cur]}は${st.sc[st.cur].subs}人）`,k:"subs",v})}}
+ $("aEst").innerHTML=est.length?est.map((e,i)=>`<div class="box"><div>${e.l}</div><button class="btn s" data-est="${i}">${SCN[st.cur]}シナリオに反映</button></div>`).join("")+'<p class="note">最新の月の実績から計算しています。1か月だけだとぶれが大きいので、数か月分たまってから反映するのがおすすめです。</p>':'<p class="note">実績を入れると、ここに「実際の数字から見た値」が出ます（Kindleは出版済みタイトル数と売れた数、YouTubeは収益と再生数が必要）。</p>';
+ $("aEst").est=est;
+}
+function loadActualForm(){const a=st.actuals.find(x=>x.ym===$("aYM").value)||{};document.querySelectorAll("[data-a]").forEach(el=>el.value=a[el.dataset.a]??"")}
+
+/* ---------- ⑤ 制作管理 ---------- */
+const VST=["未着手","台本","画像","動画","ナレーション","公開済"];
+function renderVids(){
+ const used=new Set(st.vids.map(v=>v.title));
+ $("vPick").innerHTML='<option value="">（選ばない）</option>'+st.titles.filter(t=>!used.has(t.ja)).map(t=>`<option>${esc(t.ja)}</option>`).join("");
+ const ym=thisYM(),pubThis=st.vids.filter(v=>v.stage==5&&(v.done||"").startsWith(ym)).length;
+ const cnt=VST.map((_,i)=>st.vids.filter(v=>v.stage==i).length);
+ $("vKpis").innerHTML=[["今月の公開",`${pubThis} / ${st.base.videos}本`],["制作中",cnt.slice(1,5).reduce((a,b)=>a+b,0)+"本"],["未着手",cnt[0]+"本"],["公開済み（全部）",cnt[5]+"本"]]
+  .map(([a,b])=>`<div class="kpi"><div class="k">${a}</div><div class="v">${b}</div></div>`).join("")+
+  `<div style="grid-column:1/-1">${VST.slice(1,5).map((l,i)=>`<span class="chip">${l} ${cnt[i+1]}</span>`).join("")}</div>`;
+ document.querySelectorAll("#vFilt button").forEach(b=>b.classList.toggle("on",b.dataset.f===st.vFilter));
+ const list=st.vids.filter(v=>st.vFilter==="all"||(st.vFilter==="done"?v.stage==5:v.stage<5)).sort((a,b)=>(a.stage==5)-(b.stage==5)||(a.due||"9").localeCompare(b.due||"9"));
+ const today=new Date().toISOString().slice(0,10);
+ $("vList").innerHTML=list.map(v=>`<div class="vd"><div class="top"><b>${esc(v.title)}</b><span class="note">${v.stage==5?"公開 "+(v.done||""):(v.due?((v.due<today?"⚠遅れ ":"予定 ")+v.due):"")}</span></div>
+  <div class="ctl"><select data-vid="${v.id}" data-vf="stage">${VST.map((l,i)=>`<option value="${i}" ${v.stage==i?"selected":""}>${l}</option>`).join("")}</select>
+  <input type="date" data-vid="${v.id}" data-vf="due" value="${v.due||""}"><a href="#" data-vdel="${v.id}" class="note" style="color:var(--red);margin-left:auto">削除</a></div></div>`).join("")||'<p class="note">ここに表示する動画はありません。</p>';
+}
+
+/* ---------- ⑥ チェックリスト ---------- */
+const CHK={
+ yt:["「子ども向け」に設定していない（中身も大人・語学学習者向けになっている）","タイトルとサムネイルが大人向け（子ども向けの絵柄・言葉になっていない）","物語の背景や文化の解説を入れた","止まった絵のスライドだけでなく、動きのある映像になっている（量産型コンテンツ扱いを避ける）","AIで作ったリアルな映像がある場合、「改変・合成コンテンツ」の開示を確認した","昔話は自分でリライトした（現代の絵本や本の文章を写していない）","音楽・効果音・音声の利用許可（ライセンス）を確認した","英語字幕・日本語字幕を付けた","説明欄にKindle絵本・eBayストアのリンクを入れた","制作管理で「公開済」にした"],
+ kd:["AIで作った文章・画像を使っていることをKDPで申告した","KDPセレクトに登録した（日本で70%を受け取る条件）","価格が70%の範囲（日本¥250〜¥1,650／米国$2.99〜$12.99）に入っている、または35%で納得している","ファイルサイズを確認した（日本は10MB以上で配信コスト0円、米国は1MBあたり$0.15）","本の言語（日本語／英語）の選び方を決めた","説明文に収録している話を全部書いた","単品で出した話を含むセットは、説明文にその旨を書いた","表紙・タイトルに他人の作品名やキャラクターを使っていない","セット設計でこのセットを「確定」にした（出版後は中身を変えない、足すならVol.2）","今日出すのは3タイトル以内"]
+};
+function renderChecks(){
+ for(const k of ["yt","kd"]){const el=$(k==="yt"?"ckYt":"ckKd"),c=st.checks[k]||{};
+  el.innerHTML=CHK[k].map((t,i)=>`<label class="ck ${c[i]?"on":""}"><input type="checkbox" data-ck="${k}:${i}" ${c[i]?"checked":""}><span>${t}</span></label>`).join("");
+  const n=CHK[k].filter((_,i)=>c[i]).length;$(k==="yt"?"ckYtN":"ckKdN").textContent=`${n} / ${CHK[k].length}`+(n===CHK[k].length?" ✓ 準備OK":"");}
+}
+function showPanel(){document.querySelectorAll("#moreSeg button").forEach(b=>b.classList.toggle("on",b.dataset.p===st.morePanel));document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="p-"+st.morePanel))}
 function $(id){return document.getElementById(id)}
-function renderAll(){fillInputs();renderSc();renderSim();renderKd();renderTitles();renderCompare();renderProps();renderLocked();renderCmp();renderCps()}
-function recalc(){save();renderSim();renderKd();renderCmp();renderCps()}
+function renderAll(){fillInputs();renderSc();renderSim();renderKd();renderTitles();renderCompare();renderProps();renderLocked();renderCmp();renderCps();renderActuals();loadActualForm();renderVids();renderChecks();showPanel()}
+function recalc(){save();renderSim();renderKd();renderCmp();renderCps();renderActuals()}
 
 /* ---------- イベント ---------- */
 document.addEventListener("input",e=>{const t=e.target,d=t.dataset;
@@ -580,7 +733,7 @@ $("cmpSeg").onclick=e=>{const s=e.target.dataset.s;if(!s)return;st.cmpSc=s;save(
 $("nav").onclick=e=>{const b=e.target.closest("button");if(!b)return;
  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.id===b.dataset.t));
- window.scrollTo(0,0);if(b.dataset.t==="t-sim")drawCharts();if(b.dataset.t==="t-cmp")renderCmp();if(b.dataset.t==="t-more")renderCps()};
+ window.scrollTo(0,0);if(b.dataset.t==="t-sim")drawCharts();if(b.dataset.t==="t-act")renderActuals();if(b.dataset.t==="t-more"){showPanel();renderCmp();renderCps();renderVids()}};
 /* タイトル */
 $("tSearch").oninput=()=>{page=0;renderTitles()};$("tFilter").onchange=()=>{page=0;renderTitles()};
 $("pPrev").onclick=()=>{page=Math.max(0,page-1);renderTitles()};$("pNext").onclick=()=>{page++;renderTitles()};
@@ -615,9 +768,27 @@ const msg=t=>$("dataMsg").textContent=t;
 $("exportBtn").onclick=()=>{const d=new Date(),n=`mukashi_plan_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(st)],{type:"application/json"}));a.download=n;document.body.appendChild(a);a.click();a.remove();msg("書き出しました："+n+"（「ファイル」アプリに保存してください）")};
 $("importBtn").onclick=()=>$("importFile").click();
-$("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const s=JSON.parse(t);if(!s.base)throw 0;st=Object.assign(clone(DEF),s);save();renderAll();msg("読み込みました")}catch(_){msg("このファイルは読み込めませんでした")}});e.target.value=""};
+$("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const s=JSON.parse(t);if(!s.base)throw 0;st=merge(s);save();renderAll();msg("読み込みました")}catch(_){msg("このファイルは読み込めませんでした")}});e.target.value=""};
 $("resetBtn").onclick=function(){if(this.dataset.sure){st=clone(DEF);save();lastProps=[];renderAll();this.dataset.sure="";this.textContent="全部を初期値に戻す";msg("初期値に戻しました")}else{this.dataset.sure=1;this.textContent="本当に戻す場合はもう一度押す"}};
-window.addEventListener("resize",drawCharts);
+
+/* 実績 */
+$("startYM").onchange=e=>{st.base.startYM=e.target.value||nextYM;recalc()};
+$("aYM").onchange=loadActualForm;
+$("aSave").onclick=()=>{const ym=$("aYM").value;if(!ym)return;const o={ym};document.querySelectorAll("[data-a]").forEach(el=>o[el.dataset.a]=el.value===""?"":parseFloat(el.value));
+ st.actuals=st.actuals.filter(a=>a.ym!==ym);st.actuals.push(o);save();renderActuals();renderCps();$("aSave").textContent="保存しました ✓";setTimeout(()=>$("aSave").textContent="この月を保存",1500)};
+$("aTbl").onclick=e=>{const d=e.target.dataset.adel;if(!d)return;e.preventDefault();if(e.target.dataset.sure){st.actuals=st.actuals.filter(a=>a.ym!==d);save();renderActuals();renderCps()}else{e.target.dataset.sure=1;e.target.textContent="もう一度"}};
+$("aEst").onclick=e=>{const i=e.target.dataset.est;if(i==null)return;const x=$("aEst").est[+i];st.sc[st.cur][x.k]=x.v;recalc();renderSc();e.target.textContent="反映しました ✓"};
+/* 制作 */
+$("vAdd").onclick=()=>{const t=$("vName").value.trim()||$("vPick").value;if(!t)return;st.vids.push({id:st.nextId++,title:t,stage:0,due:$("vDue").value,done:""});$("vName").value="";$("vDue").value="";save();renderVids()};
+$("vFilt").onclick=e=>{const f=e.target.dataset.f;if(!f)return;st.vFilter=f;save();renderVids()};
+$("vList").onchange=e=>{const id=+e.target.dataset.vid,f=e.target.dataset.vf;if(!id)return;const v=st.vids.find(x=>x.id===id);
+ if(f==="stage"){v.stage=+e.target.value;v.done=v.stage==5?(v.done||new Date().toISOString().slice(0,10)):""}else v[f]=e.target.value;save();renderVids()};
+$("vList").onclick=e=>{const d=e.target.dataset.vdel;if(!d)return;e.preventDefault();if(e.target.dataset.sure){st.vids=st.vids.filter(v=>v.id!==+d);save();renderVids()}else{e.target.dataset.sure=1;e.target.textContent="もう一度押すと削除"}};
+/* チェック */
+$("p-chk").addEventListener("change",e=>{const c=e.target.dataset.ck;if(!c)return;const[k,i]=c.split(":");st.checks[k]=st.checks[k]||{};st.checks[k][i]=e.target.checked;save();renderChecks()});
+$("p-chk").addEventListener("click",e=>{const k=e.target.dataset.ckreset;if(!k)return;if(e.target.dataset.sure){st.checks[k]={};save();renderChecks();e.target.dataset.sure="";e.target.textContent=k==="yt"?"次の動画のためにリセット":"次の本のためにリセット"}else{e.target.dataset.sure=1;e.target.textContent="もう一度押すとリセット"}});
+$("moreSeg").onclick=e=>{const p=e.target.dataset.p;if(!p)return;st.morePanel=p;save();showPanel();if(p==="cmp")renderCmp();if(p==="judge")renderCps();if(p==="prod")renderVids()};
+window.addEventListener("resize",()=>{drawCharts();renderActuals()});
 load();renderAll();
 </script>
 </body>
